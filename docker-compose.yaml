@@ -1,0 +1,7 @@
+version: '3'
+services:
+  cat-detector:
+    image: cat-detector:latest
+    ports:
+      - 8282:80
+    restart: always
