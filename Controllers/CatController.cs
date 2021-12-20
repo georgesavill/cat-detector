@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace cat_detector.Controllers
 {
     [ApiController]
-    [Route("[controller]")]
+    [Route("/")]
     public class CatController : ControllerBase
     {
         private readonly ILogger<CatController> _logger;
