@@ -1,0 +1,11 @@
+version: '3'
+services:
+  cat-detector:
+    image: cat-detector:latest
+    ports:
+      - 6969:80
+    environment:
+      - "ASPNETCORE_Config_CctvAuth=${CctvAuth}"
+      - "ASPNETCORE_Config_CctvUrl=${CctvUrl}"
+      - "ASPNETCORE_Config_TelegramAuth=${TelegramAuth}"
+    restart: always
