@@ -8,4 +8,6 @@ services:
       - "DOTNET_Config__TelegramUrl=${TelegramUrl}"
     ports:
       - 6969:80
+    volumes:
+      - ./images:/media
     restart: always
