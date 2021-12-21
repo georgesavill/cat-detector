@@ -41,19 +41,19 @@ namespace cat_detector.Controllers
         async Task<string> GetImageLocation()
         {
             _logger.LogInformation("GetImageLocation() called");
-
+            string imageLocation = "/media/" + DateTimeOffset.Now.ToUnixTimeSeconds() + ".jpg";
             HttpClient httpClient = new HttpClient();
             var byteArray = new UTF8Encoding().GetBytes(_configuration.GetSection("Config").GetSection("CctvAuth").Value.ToString());
             httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Basic", Convert.ToBase64String(byteArray));
             using (var contentStream = await httpClient.GetStreamAsync(_configuration.GetSection("Config").GetSection("CctvUrl").Value.ToString()))
-            using (var fileStream = new FileStream(@"./image.jpg", FileMode.Create, FileAccess.Write, FileShare.None, 1048576, true))
+            using (var fileStream = new FileStream(imageLocation, FileMode.Create, FileAccess.Write, FileShare.None, 1048576, true))
             {
                 await contentStream.CopyToAsync(fileStream);
             }
 
             await CropImage();
 
-            return @"./image.jpg";
+            return imageLocation;
         }
 
         async Task<Boolean> CropImage()
