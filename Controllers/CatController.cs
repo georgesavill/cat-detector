@@ -2,6 +2,8 @@ using Cat_detector;
 using Microsoft.AspNetCore.Mvc;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Processing;
+using System;
+using System.IO;
 using System.Text;
 
 namespace cat_detector.Controllers
@@ -24,12 +26,16 @@ namespace cat_detector.Controllers
         {
             _logger.LogInformation("Get recieved");
             //Load sample data
+            (string imageLocation, string imageFilename) = await GetImageLocation();
             var sampleData = new MLModel.ModelInput()
             {
-                ImageSource = await GetImageLocation(),
+                ImageSource =  imageLocation,
             };
 
             string catStatus = await Task.FromResult(MLModel.Predict(sampleData).Prediction);
+
+            MoveImage(catStatus, imageLocation, imageFilename);
+
             if (catStatus == "cat")
             {
                 SendNotification();
@@ -38,10 +44,11 @@ namespace cat_detector.Controllers
             return catStatus;
         }
 
-        async Task<string> GetImageLocation()
+        async Task<(string, string)> GetImageLocation()
         {
             _logger.LogInformation("GetImageLocation() called");
-            string imageLocation = "/media/" + DateTimeOffset.Now.ToUnixTimeSeconds() + ".jpg";
+            string imageFilename = DateTimeOffset.Now.ToUnixTimeSeconds() + ".jpg";
+            string imageLocation = "/media/" + imageFilename;
             HttpClient httpClient = new HttpClient();
             var byteArray = new UTF8Encoding().GetBytes(_configuration.GetSection("Config").GetSection("CctvAuth").Value.ToString());
             httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Basic", Convert.ToBase64String(byteArray));
@@ -53,7 +60,44 @@ namespace cat_detector.Controllers
 
             CropImage(imageLocation);
 
-            return imageLocation;
+            return (imageLocation, imageFilename);
+        }
+
+        void MoveImage(string imageCategory, string imageLocation, string imageFilename)
+        {
+            _logger.LogInformation("MoveImage() called");
+            string newImageLocation = @"/media/" + imageCategory + "/" + imageFilename;
+            try
+            {
+                if (!System.IO.File.Exists(imageLocation))
+                {
+                    // This statement ensures that the file is created,
+                    // but the handle is not kept.
+                    using (FileStream fs = System.IO.File.Create(imageLocation)) { }
+                }
+
+                // Ensure that the target does not exist.
+                if (System.IO.File.Exists(newImageLocation))
+                    System.IO.File.Delete(newImageLocation);
+
+                // Move the file.
+                System.IO.File.Move(imageLocation, newImageLocation);
+                _logger.LogInformation("{0} was moved to {1}.", imageLocation, newImageLocation);
+
+                // See if the original exists now.
+                if (System.IO.File.Exists(imageLocation))
+                {
+                    _logger.LogError("The original file still exists, which is unexpected.");
+                }
+                else
+                {
+                    _logger.LogInformation("The original file no longer exists, which is expected.");
+                }
+            }
+            catch (Exception e)
+            {
+                _logger.LogError("The process failed: {0}", e.ToString());
+            }
         }
 
         void CropImage(string imageLocation)
