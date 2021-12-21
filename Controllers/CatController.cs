@@ -51,22 +51,20 @@ namespace cat_detector.Controllers
                 await contentStream.CopyToAsync(fileStream);
             }
 
-            await CropImage();
+            CropImage(imageLocation);
 
             return imageLocation;
         }
 
-        async Task<Boolean> CropImage()
+        void CropImage(string imageLocation)
         {
             _logger.LogInformation("CropImage() called");
 
-            using (Image image = Image.Load(@"./image.jpg"))
+            using (Image image = Image.Load(imageLocation))
             {
                 image.Mutate(x => x.Crop(new Rectangle(0, (image.Height - 500), 500, 500)));
-                image.Save(@"./image.jpg");
+                image.Save(imageLocation);
             }
-
-            return true;
         }
 
         async void SendNotification()
