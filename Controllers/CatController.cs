@@ -31,17 +31,17 @@ namespace cat_detector.Controllers
         public async Task<string> Get()
         {
             _logger.LogInformation("Get recieved");
-            //Load sample data
+
             (string imageLocation, string imageFilename) = await _imageService.DownloadCctvImage();
 
             _imageService.CropImage(imageLocation);
 
-            var sampleData = new MLModel.ModelInput()
-            {
-                ImageSource =  imageLocation,
-            };
+            var sampleData = new MLModel.ModelInput() { ImageSource =  imageLocation };
              
-            string catStatus = await Task.FromResult(MLModel.Predict(sampleData).Prediction);
+            MLModel.ModelOutput catPrediction = await Task.FromResult(MLModel.Predict(sampleData));
+
+            string catStatus = catPrediction.Prediction;
+            string catScore = catPrediction.Score[1].ToString("P2");
 
             _imageService.MoveImage(imageLocation, @"/media/" + catStatus + "/" + imageFilename);
 
@@ -49,7 +49,7 @@ namespace cat_detector.Controllers
             {
                 foreach (TelegramUserClass telegramUser in _configuration.GetSection(ConfigurationOptions.Config).Get<ConfigurationOptions>().TelegramUsers)
                 {
-                    _telegramService.SendMessage(telegramUser.Id, "CAT");
+                    _telegramService.SendMessage(telegramUser.Id, catScore + " " + catStatus);
                 }
             }
             _logger.LogInformation("Returning status: {0}", catStatus);
