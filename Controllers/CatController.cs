@@ -47,7 +47,7 @@ namespace cat_detector.Controllers
                     _telegramService.SendMessage(telegramUser.Id, "CAT");
                 }
             }
-            _logger.LogInformation("Returning status: " + catStatus);
+            _logger.LogInformation("Returning status: {0}", catStatus);
             return catStatus;
         }
 
