@@ -13,5 +13,5 @@ services:
     ports:
       - 6969:80
     volumes:
-      - ./images:/media
+      - ${ImageStorageLocation}:/media
     restart: always
