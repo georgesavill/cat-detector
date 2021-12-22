@@ -8,5 +8,9 @@
         public string CctvUrl { get; set; }
         public string TelegramUrl { get; set; }
         public TelegramUserClass[] TelegramUsers { get; set; }
+        public int ImageCropX { get; set; }
+        public int ImageCropY { get; set; }
+        public int ImageCropWidth { get; set; }
+        public int ImageCropHeight { get; set; }
     }
 }

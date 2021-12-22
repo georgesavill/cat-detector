@@ -19,10 +19,10 @@ namespace cat_detector.Services
         public void CropImage(string imageLocation)
         {
             _logger.LogInformation("CropImage() called");
-            int x = 0;
-            int y = 1420;
-            int width = 500;
-            int height = 500;
+            int x = _configuration.GetSection(ConfigurationOptions.Config).Get<ConfigurationOptions>().ImageCropX;
+            int y = _configuration.GetSection(ConfigurationOptions.Config).Get<ConfigurationOptions>().ImageCropY;
+            int width = _configuration.GetSection(ConfigurationOptions.Config).Get<ConfigurationOptions>().ImageCropWidth;
+            int height = _configuration.GetSection(ConfigurationOptions.Config).Get<ConfigurationOptions>().ImageCropHeight;
             using (Image image = Image.Load(imageLocation))
             {
                 image.Mutate(i => i.Crop(new Rectangle(x, y, width, height)));
