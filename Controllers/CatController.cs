@@ -41,7 +41,7 @@ namespace cat_detector.Controllers
             MLModel.ModelOutput catPrediction = await Task.FromResult(MLModel.Predict(sampleData));
 
             string catStatus = catPrediction.Prediction;
-            string catScore = catPrediction.Score[1].ToString("P2");
+            string catScore = catPrediction.Score[0].ToString("P2");
 
             _imageService.MoveImage(imageLocation, @"/media/" + catStatus + "/" + imageFilename);
 
