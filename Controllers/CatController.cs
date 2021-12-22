@@ -1,5 +1,6 @@
 using Cat_detector;
 using cat_detector.Classes;
+using cat_detector.Services;
 using Microsoft.AspNetCore.Mvc;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Processing;
@@ -15,11 +16,13 @@ namespace cat_detector.Controllers
     {
         private readonly ILogger<CatController> _logger;
         private IConfiguration _configuration;
+        private TelegramService _telegramService;
 
-        public CatController(ILogger<CatController> logger, IConfiguration configuration)
+        public CatController(ILogger<CatController> logger, IConfiguration configuration, TelegramService telegramService)
         {
             _logger = logger;
             _configuration = configuration;
+            _telegramService = telegramService;
         }
 
         [HttpGet]
@@ -39,7 +42,10 @@ namespace cat_detector.Controllers
 
             if (catStatus == "cat")
             {
-                SendNotification();
+                foreach (TelegramUserClass telegramUser in _configuration.GetSection(ConfigurationOptions.Config).Get<ConfigurationOptions>().TelegramUsers)
+                {
+                    _telegramService.SendMessage(telegramUser.Id, "CAT");
+                }
             }
             _logger.LogInformation("Returning status: " + catStatus);
             return catStatus;
@@ -109,30 +115,6 @@ namespace cat_detector.Controllers
             {
                 image.Mutate(x => x.Crop(new Rectangle(0, (image.Height - 500), 500, 500)));
                 image.Save(imageLocation);
-            }
-        }
-
-        async void SendNotification()
-        {
-            _logger.LogInformation("SendNotification() called");
-
-            HttpClient client = new HttpClient();
-            foreach (TelegramUserClass telegramUser in _configuration.GetSection(ConfigurationOptions.Config).Get<ConfigurationOptions>().TelegramUsers)
-            {
-                _logger.LogInformation("Sending notification to telegram user: " + telegramUser.Id);
-
-                HttpResponseMessage httpResponse = await client.PostAsync(_configuration.GetSection(ConfigurationOptions.Config).Get<ConfigurationOptions>().TelegramUrl + "?chat_id=" + telegramUser.Id + "&text=CAT", null);
-
-                if (httpResponse.IsSuccessStatusCode)
-                {
-                    string httpResponseContent = await httpResponse.Content.ReadAsStringAsync();
-                    _logger.LogInformation(httpResponseContent);
-                }
-                else
-                {
-                    string httpResponseContent = await httpResponse.Content.ReadAsStringAsync();
-                    _logger.LogError("ERROR: " + httpResponseContent + " : " + httpResponse.StatusCode);
-                }
             }
         }
     }

@@ -1,4 +1,5 @@
 using cat_detector.Classes;
+using cat_detector.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -7,6 +8,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 
 ConfigureConfiguration(builder.Configuration);
+ConfigureServices(builder.Services);
 
 var app = builder.Build();
 
@@ -26,4 +28,9 @@ void ConfigureConfiguration(ConfigurationManager configuration)
     Console.WriteLine("Configuring configuration");
     ConfigurationOptions configurationOptions = new ConfigurationOptions();
     configuration.GetSection(ConfigurationOptions.Config).Bind(configurationOptions);
+}
+void ConfigureServices(IServiceCollection services)
+{
+    Console.WriteLine("Configuring services");
+    services.AddTransient<TelegramService>();
 }
