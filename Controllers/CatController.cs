@@ -17,14 +17,14 @@ namespace cat_detector.Controllers
         private readonly ILogger<CatController> _logger;
         private IConfiguration _configuration;
         private TelegramService _telegramService;
-        private ImageProcessingService _imageProcessingService;
+        private ImageService _imageService;
 
-        public CatController(ILogger<CatController> logger, IConfiguration configuration, TelegramService telegramService, ImageProcessingService imageProcessingService)
+        public CatController(ILogger<CatController> logger, IConfiguration configuration, TelegramService telegramService, ImageService imageService)
         {
             _logger = logger;
             _configuration = configuration;
             _telegramService = telegramService;
-            _imageProcessingService = imageProcessingService;
+            _imageService = imageService;
         }
 
         [HttpGet]
@@ -32,7 +32,10 @@ namespace cat_detector.Controllers
         {
             _logger.LogInformation("Get recieved");
             //Load sample data
-            (string imageLocation, string imageFilename) = await GetImageLocation();
+            (string imageLocation, string imageFilename) = await _imageService.DownloadCctvImage();
+
+            _imageService.CropImage(imageLocation);
+
             var sampleData = new MLModel.ModelInput()
             {
                 ImageSource =  imageLocation,
@@ -40,7 +43,7 @@ namespace cat_detector.Controllers
              
             string catStatus = await Task.FromResult(MLModel.Predict(sampleData).Prediction);
 
-            _imageProcessingService.MoveImage(imageLocation, @"/media/" + catStatus + "/" + imageFilename);
+            _imageService.MoveImage(imageLocation, @"/media/" + catStatus + "/" + imageFilename);
 
             if (catStatus == "cat")
             {
@@ -51,25 +54,6 @@ namespace cat_detector.Controllers
             }
             _logger.LogInformation("Returning status: {0}", catStatus);
             return catStatus;
-        }
-
-        async Task<(string, string)> GetImageLocation()
-        {
-            _logger.LogInformation("GetImageLocation() called");
-            string imageFilename = DateTimeOffset.Now.ToUnixTimeSeconds() + ".jpg";
-            string imageLocation = "/media/" + imageFilename;
-            HttpClient httpClient = new HttpClient();
-            var byteArray = new UTF8Encoding().GetBytes(_configuration.GetSection("Config").GetSection("CctvAuth").Value.ToString());
-            httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Basic", Convert.ToBase64String(byteArray));
-            using (var contentStream = await httpClient.GetStreamAsync(_configuration.GetSection("Config").GetSection("CctvUrl").Value.ToString()))
-            using (var fileStream = new FileStream(imageLocation, FileMode.Create, FileAccess.Write, FileShare.None, 1048576, true))
-            {
-                await contentStream.CopyToAsync(fileStream);
-            }
-
-            _imageProcessingService.CropImage(imageLocation);
-            
-            return (imageLocation, imageFilename);
         }
     }
 }

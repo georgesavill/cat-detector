@@ -1,14 +1,16 @@
-﻿using SixLabors.ImageSharp;
+﻿using cat_detector.Classes;
+using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Processing;
+using System.Text;
 
 namespace cat_detector.Services
 {
-    public class ImageProcessingService
+    public class ImageService
     {
-        private readonly ILogger<ImageProcessingService> _logger;
+        private readonly ILogger<ImageService> _logger;
         private IConfiguration _configuration;
 
-        public ImageProcessingService(ILogger<ImageProcessingService> logger, IConfiguration configuration)
+        public ImageService(ILogger<ImageService> logger, IConfiguration configuration)
         {
             _logger = logger;
             _configuration = configuration;
@@ -26,6 +28,23 @@ namespace cat_detector.Services
                 image.Mutate(i => i.Crop(new Rectangle(x, y, width, height)));
                 image.Save(imageLocation);
             }
+        }
+
+        public async Task<(string, string)> DownloadCctvImage()
+        {
+            _logger.LogInformation("DownloadCctvImage() called");
+            string imageFilename = DateTimeOffset.Now.ToUnixTimeSeconds() + ".jpg";
+            string imageLocation = "/media/" + imageFilename;
+            HttpClient httpClient = new HttpClient();
+            var byteArray = new UTF8Encoding().GetBytes(_configuration.GetSection(ConfigurationOptions.Config).Get<ConfigurationOptions>().CctvAuth);
+            httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Basic", Convert.ToBase64String(byteArray));
+            using (var contentStream = await httpClient.GetStreamAsync(_configuration.GetSection(ConfigurationOptions.Config).Get<ConfigurationOptions>().CctvUrl))
+            using (var fileStream = new FileStream(imageLocation, FileMode.Create, FileAccess.Write, FileShare.None, 1048576, true))
+            {
+                await contentStream.CopyToAsync(fileStream);
+            }
+
+            return (imageLocation, imageFilename);
         }
 
         public void MoveImage(string originalImageLocation, string newImageLocation)
