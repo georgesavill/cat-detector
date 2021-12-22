@@ -1,4 +1,5 @@
 using Cat_detector;
+using cat_detector.Classes;
 using Microsoft.AspNetCore.Mvc;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Processing;
@@ -31,7 +32,7 @@ namespace cat_detector.Controllers
             {
                 ImageSource =  imageLocation,
             };
-
+             
             string catStatus = await Task.FromResult(MLModel.Predict(sampleData).Prediction);
 
             MoveImage(catStatus, imageLocation, imageFilename);
@@ -116,16 +117,22 @@ namespace cat_detector.Controllers
             _logger.LogInformation("SendNotification() called");
 
             HttpClient client = new HttpClient();
-            HttpResponseMessage httpResponse = await client.PostAsync(_configuration.GetSection("Config").GetSection("TelegramUrl").Value.ToString(), null);
-            
-            if (httpResponse.IsSuccessStatusCode)
+            foreach (TelegramUserClass telegramUser in _configuration.GetSection(ConfigurationOptions.Config).Get<ConfigurationOptions>().TelegramUsers)
             {
-                string httpResponseContent = await httpResponse.Content.ReadAsStringAsync();
-                _logger.LogInformation(httpResponseContent);
-            } else
-            {
-                string httpResponseContent = await httpResponse.Content.ReadAsStringAsync();
-                _logger.LogError("ERROR: " + httpResponseContent + " : " + httpResponse.StatusCode);
+                _logger.LogInformation("Sending notification to telegram user: " + telegramUser.Id);
+
+                HttpResponseMessage httpResponse = await client.PostAsync(_configuration.GetSection(ConfigurationOptions.Config).Get<ConfigurationOptions>().TelegramUrl + "?chat_id=" + telegramUser.Id + "&text=CAT", null);
+
+                if (httpResponse.IsSuccessStatusCode)
+                {
+                    string httpResponseContent = await httpResponse.Content.ReadAsStringAsync();
+                    _logger.LogInformation(httpResponseContent);
+                }
+                else
+                {
+                    string httpResponseContent = await httpResponse.Content.ReadAsStringAsync();
+                    _logger.LogError("ERROR: " + httpResponseContent + " : " + httpResponse.StatusCode);
+                }
             }
         }
     }
