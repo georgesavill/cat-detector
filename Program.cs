@@ -33,4 +33,5 @@ void ConfigureServices(IServiceCollection services)
 {
     Console.WriteLine("Configuring services");
     services.AddTransient<TelegramService>();
+    services.AddTransient<ImageProcessingService>();
 }
