@@ -6,6 +6,10 @@ services:
       - "DOTNET_Config__CctvAuth=${CctvAuth}"
       - "DOTNET_Config__CctvUrl=${CctvUrl}"
       - "DOTNET_Config__TelegramUrl=${TelegramUrl}"
+      - "DOTNET_Config__TelegramUsers__0__Id=${TelegramUserAdminId}"
+      - "DOTNET_Config__TelegramUsers__0__Admin=true"
+      - "DOTNET_Config__TelegramUsers__1__Id=${TelegramUserNonAdminId}"
+      - "DOTNET_Config__TelegramUsers__1__Admin=false"
     ports:
       - 6969:80
     volumes:
