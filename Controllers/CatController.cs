@@ -45,7 +45,7 @@ namespace cat_detector.Controllers
 
             _imageService.MoveImage(imageLocation, @"/media/" + catStatus + "/" + imageFilename);
 
-            if (catStatus == "cat")
+            if (catStatus == "cat" && catPrediction.Score[0] >= _configuration.GetSection(ConfigurationOptions.Config).Get<ConfigurationOptions>().PredictionThreshold)
             {
                 foreach (TelegramUserClass telegramUser in _configuration.GetSection(ConfigurationOptions.Config).Get<ConfigurationOptions>().TelegramUsers)
                 {
