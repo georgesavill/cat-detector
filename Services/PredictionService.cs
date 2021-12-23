@@ -46,6 +46,10 @@ namespace cat_detector.Services
                     }
                 }
             }
+            else
+            {
+                File.Delete(imageLocation);
+            }
 
             return prediction.Prediction;
         }
