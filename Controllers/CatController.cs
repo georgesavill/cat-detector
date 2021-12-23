@@ -52,7 +52,7 @@ namespace cat_detector.Controllers
                     _telegramService.SendMessage(telegramUser.Id, catScore + " " + catStatus);
                 }
             }
-            _logger.LogInformation("Returning status: {0}", catStatus);
+            _logger.LogInformation("Returning status: {0} with {1} confidence", catStatus, catScore);
             return catStatus;
         }
     }
