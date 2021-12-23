@@ -5,12 +5,12 @@ namespace cat_detector.Controllers
 {
     [ApiController]
     [Route("/")]
-    public class CatController : ControllerBase
+    public class PredictionController : ControllerBase
     {
-        private readonly ILogger<CatController> _logger;
+        private readonly ILogger<PredictionController> _logger;
         private PredictionService _predictionService;
 
-        public CatController(ILogger<CatController> logger, PredictionService predictionService)
+        public PredictionController(ILogger<PredictionController> logger, PredictionService predictionService)
         {
             _logger = logger;
             _predictionService = predictionService;
