@@ -33,7 +33,7 @@ namespace cat_detector.Services
             if (prediction.Prediction != "none")
             {
                 _logger.LogInformation("PREDICTION: {0}", JsonSerializer.Serialize(prediction));
-                _imageService.MoveImage(imageLocation, @"/media/" + prediction + "/" + imageFilename);
+                _imageService.MoveImage(imageLocation, @"/media/" + prediction.Prediction + "/" + imageFilename);
 
                 foreach (TelegramUserClass telegramUser in _configuration.GetSection(ConfigurationOptions.Config).Get<ConfigurationOptions>().TelegramUsers)
                 {
