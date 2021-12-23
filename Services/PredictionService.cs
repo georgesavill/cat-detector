@@ -21,7 +21,7 @@ namespace cat_detector.Services
 
         public async Task<string> MakePrediction()
         {
-            _logger.LogInformation("Get recieved");
+            _logger.LogDebug("MakePrediction() called");
 
             (string imageLocation, string imageFilename) = await _imageService.DownloadCctvImage();
 
@@ -32,6 +32,7 @@ namespace cat_detector.Services
 
             if (prediction.Prediction != "none")
             {
+                _logger.LogInformation("PREDICTION: {0}", JsonSerializer.Serialize(prediction));
                 _imageService.MoveImage(imageLocation, @"/media/" + prediction + "/" + imageFilename);
 
                 foreach (TelegramUserClass telegramUser in _configuration.GetSection(ConfigurationOptions.Config).Get<ConfigurationOptions>().TelegramUsers)

@@ -15,7 +15,7 @@ namespace cat_detector.Services
 
         public async void SendMessage(string telegramId, string message)
         {
-            _logger.LogInformation("SendMessage() called with ID: {0} and message: {1}", telegramId, message);
+            _logger.LogDebug("SendMessage() called with ID: {0} and message: {1}", telegramId, message);
 
             HttpClient client = new HttpClient();
             HttpResponseMessage httpResponse = await client.PostAsync(_configuration.GetSection(ConfigurationOptions.Config).Get<ConfigurationOptions>().TelegramUrl + "?chat_id=" + telegramId + "&text=" + message, null);
@@ -23,7 +23,7 @@ namespace cat_detector.Services
             if (httpResponse.IsSuccessStatusCode)
             {
                 string httpResponseContent = await httpResponse.Content.ReadAsStringAsync();
-                _logger.LogInformation(httpResponseContent);
+                _logger.LogDebug(httpResponseContent);
             }
             else
             {

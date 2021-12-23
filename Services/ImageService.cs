@@ -18,7 +18,7 @@ namespace cat_detector.Services
 
         public void CropImage(string imageLocation)
         {
-            _logger.LogInformation("CropImage() called");
+            _logger.LogDebug("CropImage() called");
             int x = _configuration.GetSection(ConfigurationOptions.Config).Get<ConfigurationOptions>().ImageCropX;
             int y = _configuration.GetSection(ConfigurationOptions.Config).Get<ConfigurationOptions>().ImageCropY;
             int width = _configuration.GetSection(ConfigurationOptions.Config).Get<ConfigurationOptions>().ImageCropWidth;
@@ -32,7 +32,7 @@ namespace cat_detector.Services
 
         public async Task<(string, string)> DownloadCctvImage()
         {
-            _logger.LogInformation("DownloadCctvImage() called");
+            _logger.LogDebug("DownloadCctvImage() called");
             string imageFilename = DateTimeOffset.Now.ToUnixTimeSeconds() + ".jpg";
             string imageLocation = "/media/" + imageFilename;
             HttpClient httpClient = new HttpClient();
@@ -49,7 +49,7 @@ namespace cat_detector.Services
 
         public void MoveImage(string originalImageLocation, string newImageLocation)
         {
-            _logger.LogInformation("MoveImage() called");
+            _logger.LogDebug("MoveImage() called");
             try
             {
                 if (!File.Exists(originalImageLocation))
@@ -64,7 +64,7 @@ namespace cat_detector.Services
 
                 // Move the file.
                 File.Move(originalImageLocation, newImageLocation);
-                _logger.LogInformation("{0} was moved to {1}.", originalImageLocation, newImageLocation);
+                _logger.LogDebug("{0} was moved to {1}.", originalImageLocation, newImageLocation);
 
                 // See if the original exists now.
                 if (File.Exists(originalImageLocation))
@@ -73,7 +73,7 @@ namespace cat_detector.Services
                 }
                 else
                 {
-                    _logger.LogInformation("The original file no longer exists, which is expected.");
+                    _logger.LogDebug("The original file no longer exists, which is expected.");
                 }
             }
             catch (Exception e)
