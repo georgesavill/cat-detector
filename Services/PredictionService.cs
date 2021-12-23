@@ -30,19 +30,22 @@ namespace cat_detector.Services
             MLModel.ModelOutput catPrediction =  await Task.FromResult(MLModel.Predict(imageData));
 
             string catStatus = catPrediction.Prediction;
-            string catScore = catPrediction.Score[0].ToString("P2");
+            //string catScore = catPrediction.Score[0].ToString("P2");
 
             _imageService.MoveImage(imageLocation, @"/media/" + catStatus + "/" + imageFilename);
 
-            if (catStatus == "cat" && catPrediction.Score[0] >= _configuration.GetSection(ConfigurationOptions.Config).Get<ConfigurationOptions>().PredictionThreshold)
+            if (catStatus != "no-cat")
             {
-                foreach (TelegramUserClass telegramUser in _configuration.GetSection(ConfigurationOptions.Config).Get<ConfigurationOptions>().TelegramUsers)
-                {
-                    _telegramService.SendMessage(telegramUser.Id, catScore + " " + catStatus);
-                }
+                string message = catStatus + "%0AProb 1: " + catPrediction.Score[0].ToString("P2") + "%0AProb 2: " + catPrediction.Score[1].ToString("P2") + "%0AProb 3: " + catPrediction.Score[2].ToString("P2");
+                _telegramService.SendMessage(_configuration.GetSection(ConfigurationOptions.Config).Get<ConfigurationOptions>().TelegramUsers[0].Id, message);
+
+                //foreach (TelegramUserClass telegramUser in _configuration.GetSection(ConfigurationOptions.Config).Get<ConfigurationOptions>().TelegramUsers)
+                //{
+                //    _telegramService.SendMessage(telegramUser.Id, catScore + " " + catStatus);
+                //}
             }
 
-            return catScore + " : " + catStatus;
+            return catStatus;
         }
     }
 }
