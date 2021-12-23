@@ -36,9 +36,8 @@ namespace cat_detector.Controllers
 
             _imageService.CropImage(imageLocation);
 
-            var sampleData = new MLModel.ModelInput() { ImageSource =  imageLocation };
-             
-            MLModel.ModelOutput catPrediction = await Task.FromResult(MLModel.Predict(sampleData));
+            MLModel.ModelInput imageData = new MLModel.ModelInput() { ImageSource =  imageLocation };
+            MLModel.ModelOutput catPrediction = await Task.FromResult(MLModel.Predict(imageData));
 
             string catStatus = catPrediction.Prediction;
             string catScore = catPrediction.Score[0].ToString("P2");
