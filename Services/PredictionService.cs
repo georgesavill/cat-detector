@@ -1,5 +1,6 @@
 ﻿using Cat_detector;
 using cat_detector.Classes;
+using System.Text.Json;
 
 namespace cat_detector.Services
 {
@@ -27,25 +28,26 @@ namespace cat_detector.Services
             _imageService.CropImage(imageLocation);
 
             MLModel.ModelInput imageData = new MLModel.ModelInput() { ImageSource = imageLocation };
-            MLModel.ModelOutput catPrediction =  await Task.FromResult(MLModel.Predict(imageData));
+            MLModel.ModelOutput prediction =  await Task.FromResult(MLModel.Predict(imageData));
 
-            string catStatus = catPrediction.Prediction;
-            //string catScore = catPrediction.Score[0].ToString("P2");
-
-            _imageService.MoveImage(imageLocation, @"/media/" + catStatus + "/" + imageFilename);
-
-            if (catStatus != "no-cat")
+            if (prediction.Prediction != "none")
             {
-                string message = catStatus + "%0AProb 1: " + catPrediction.Score[0].ToString("P2") + "%0AProb 2: " + catPrediction.Score[1].ToString("P2") + "%0AProb 3: " + catPrediction.Score[2].ToString("P2");
-                _telegramService.SendMessage(_configuration.GetSection(ConfigurationOptions.Config).Get<ConfigurationOptions>().TelegramUsers[0].Id, message);
+                _imageService.MoveImage(imageLocation, @"/media/" + prediction + "/" + imageFilename);
 
-                //foreach (TelegramUserClass telegramUser in _configuration.GetSection(ConfigurationOptions.Config).Get<ConfigurationOptions>().TelegramUsers)
-                //{
-                //    _telegramService.SendMessage(telegramUser.Id, catScore + " " + catStatus);
-                //}
+                foreach (TelegramUserClass telegramUser in _configuration.GetSection(ConfigurationOptions.Config).Get<ConfigurationOptions>().TelegramUsers)
+                {
+                    if (telegramUser.Admin)
+                    {
+                        _telegramService.SendMessage(telegramUser.Id, JsonSerializer.Serialize(prediction));
+                    }
+                    else if (prediction.Prediction == "cat")
+                    {
+                        _telegramService.SendMessage(telegramUser.Id, "Mr Pussycat is waiting...");
+                    }
+                }
             }
 
-            return catStatus;
+            return prediction.Prediction;
         }
     }
 }
