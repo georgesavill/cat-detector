@@ -11,6 +11,7 @@ namespace cat_detector.Services
         private TelegramService _telegramService;
         private ImageService _imageService;
         private DateTime _lastNotificationSent;
+        private DateTime _lastNoneImageSaved;
 
         public PredictionService(ILogger<PredictionService> logger, IConfiguration configuration, TelegramService telegramService, ImageService imageService)
         {
@@ -56,7 +57,14 @@ namespace cat_detector.Services
             }
             else
             {
-                File.Delete(imageLocation);
+                if ((DateTime.Now - _lastNoneImageSaved).TotalMinutes >= _configuration.GetSection(ConfigurationOptions.Config).Get<ConfigurationOptions>().MinutesBetweenNoneImageSaved)
+                {
+                    _imageService.MoveImage(imageLocation, @"/media/" + prediction.Prediction + "/" + imageFilename);
+                } 
+                else
+                {
+                    File.Delete(imageLocation);
+                }
             }
 
             return prediction.Prediction;

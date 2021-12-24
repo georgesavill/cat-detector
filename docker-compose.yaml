@@ -15,6 +15,7 @@ services:
       - "DOTNET_Config__ImageCropWidth=${ImageCropWidth}"
       - "DOTNET_Config__ImageCropHeight=${ImageCropHeight}"
       - "DOTNET_Config__MinutesBetweenAlerts=${MinutesBetweenAlerts}"
+      - "DOTNET_Config__MinutesBetweenNoneImageSaved=${MinutesBetweenNoneImageSaved}"
     ports:
       - 6969:80
     volumes:
