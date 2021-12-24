@@ -62,6 +62,7 @@ namespace cat_detector.Services
                 {
                     _logger.LogDebug("Saving non-event image");
                     _imageService.MoveImage(imageLocation, @"/media/" + prediction.Prediction + "/" + imageFilename);
+                    _lastNoneImageSaved = DateTime.Now;
                 } 
                 else
                 {
