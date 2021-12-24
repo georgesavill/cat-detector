@@ -7,7 +7,7 @@ namespace cat_detector.Services
     public class PredictionService
     {
         private readonly ILogger<PredictionService> _logger;
-        private IConfiguration _configuration;
+        private ConfigurationOptions _configurationOptions;
         private TelegramService _telegramService;
         private ImageService _imageService;
         private DateTime _lastNotificationSent;
@@ -16,7 +16,7 @@ namespace cat_detector.Services
         public PredictionService(ILogger<PredictionService> logger, IConfiguration configuration, TelegramService telegramService, ImageService imageService)
         {
             _logger = logger;
-            _configuration = configuration;
+            _configurationOptions = configuration.GetSection(ConfigurationOptions.Config).Get<ConfigurationOptions>();
             _telegramService = telegramService;
             _imageService = imageService;
         }
@@ -37,9 +37,9 @@ namespace cat_detector.Services
                 _logger.LogInformation("PREDICTION: {0}", JsonSerializer.Serialize(prediction));
                 _imageService.MoveImage(imageLocation, @"/media/" + prediction.Prediction + "/" + imageFilename);
 
-                foreach (TelegramUserClass telegramUser in _configuration.GetSection(ConfigurationOptions.Config).Get<ConfigurationOptions>().TelegramUsers)
+                foreach (TelegramUserClass telegramUser in _configurationOptions.TelegramUsers)
                 {
-                    if ((DateTime.Now - _lastNotificationSent).TotalMinutes >= _configuration.GetSection(ConfigurationOptions.Config).Get<ConfigurationOptions>().MinutesBetweenAlerts)
+                    if ((DateTime.Now - _lastNotificationSent).TotalMinutes >= _configurationOptions.MinutesBetweenAlerts)
                     {
                         if (telegramUser.Admin)
                         {
@@ -47,7 +47,7 @@ namespace cat_detector.Services
                             _telegramService.SendMessage(telegramUser.Id, JsonSerializer.Serialize(prediction));
                             _lastNotificationSent = DateTime.Now;
                         }
-                        else if (prediction.Prediction == "cat" && prediction.Score[0] >= _configuration.GetSection(ConfigurationOptions.Config).Get<ConfigurationOptions>().PredictionThreshold)
+                        else if (prediction.Prediction == "cat" && prediction.Score[0] >= _configurationOptions.PredictionThreshold)
                         {
                             _logger.LogDebug("Alerting non-admin user");
                             _telegramService.SendMessage(telegramUser.Id, "Mr Pussycat is waiting...");
@@ -58,7 +58,7 @@ namespace cat_detector.Services
             }
             else
             {
-                if ((DateTime.Now - _lastNoneImageSaved).TotalMinutes >= _configuration.GetSection(ConfigurationOptions.Config).Get<ConfigurationOptions>().MinutesBetweenNoneImageSaved)
+                if ((DateTime.Now - _lastNoneImageSaved).TotalMinutes >= _configurationOptions.MinutesBetweenNoneImageSaved)
                 {
                     _logger.LogDebug("Saving non-event image");
                     _imageService.MoveImage(imageLocation, @"/media/" + prediction.Prediction + "/" + imageFilename);
