@@ -32,7 +32,9 @@ namespace cat_detector.Services
 
             MLModel.ModelInput imageData = new MLModel.ModelInput() { ImageSource = imageLocation };
             MLModel.ModelOutput prediction =  await Task.FromResult(MLModel.Predict(imageData));
+
             _predictionHistory.Enqueue(prediction.Prediction);
+            while (_predictionHistory.Count > _configurationOptions.ConsecutivePredictionThreshold) _predictionHistory.Dequeue();
 
             if (prediction.Prediction != "none")
             {
@@ -87,10 +89,6 @@ namespace cat_detector.Services
                 {
                     predictionHistoryConsistent = false;
                 }
-            }
-            while (_predictionHistory.Count > _configurationOptions.ConsecutivePredictionThreshold)
-            {
-                _predictionHistory.Dequeue();
             }
             _logger.LogDebug("Returning " + predictionHistoryConsistent);
             return predictionHistoryConsistent;
