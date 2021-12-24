@@ -47,9 +47,10 @@ namespace cat_detector.Services
                             _telegramService.SendMessage(telegramUser.Id, JsonSerializer.Serialize(prediction));
                             _lastNotificationSent = DateTime.Now;
                         }
-                        else if (prediction.Prediction == "cat" && prediction.Score[0] >= _configurationOptions.PredictionThreshold)
+                        
+                        if (prediction.Prediction == "cat" && prediction.Score[0] >= _configurationOptions.PredictionThreshold)
                         {
-                            _logger.LogDebug("Alerting non-admin user");
+                            _logger.LogDebug("Alerting all users");
                             _telegramService.SendMessage(telegramUser.Id, "Mr Pussycat is waiting...");
                             _lastNotificationSent = DateTime.Now;
                         }
