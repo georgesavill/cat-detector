@@ -13,5 +13,7 @@
         public int ImageCropWidth { get; set; }
         public int ImageCropHeight { get; set; }
         public float PredictionThreshold { get; set; }
+        public int MinutesBetweenAlerts { get; set; }
+        public int MinutesBetweenNoneImageSaved { get; set; }
     }
 }

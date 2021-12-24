@@ -7,14 +7,16 @@ namespace cat_detector.Services
     public class PredictionService
     {
         private readonly ILogger<PredictionService> _logger;
-        private IConfiguration _configuration;
+        private ConfigurationOptions _configurationOptions;
         private TelegramService _telegramService;
         private ImageService _imageService;
+        private DateTime _lastNotificationSent;
+        private DateTime _lastNoneImageSaved;
 
         public PredictionService(ILogger<PredictionService> logger, IConfiguration configuration, TelegramService telegramService, ImageService imageService)
         {
             _logger = logger;
-            _configuration = configuration;
+            _configurationOptions = configuration.GetSection(ConfigurationOptions.Config).Get<ConfigurationOptions>();
             _telegramService = telegramService;
             _imageService = imageService;
         }
@@ -35,21 +37,37 @@ namespace cat_detector.Services
                 _logger.LogInformation("PREDICTION: {0}", JsonSerializer.Serialize(prediction));
                 _imageService.MoveImage(imageLocation, @"/media/" + prediction.Prediction + "/" + imageFilename);
 
-                foreach (TelegramUserClass telegramUser in _configuration.GetSection(ConfigurationOptions.Config).Get<ConfigurationOptions>().TelegramUsers)
+                if ((DateTime.Now - _lastNotificationSent).TotalMinutes >= _configurationOptions.MinutesBetweenAlerts)
                 {
-                    if (telegramUser.Admin)
+                    foreach (TelegramUserClass telegramUser in _configurationOptions.TelegramUsers)
                     {
-                        _telegramService.SendMessage(telegramUser.Id, JsonSerializer.Serialize(prediction));
+                        if (telegramUser.Admin)
+                        {
+                            _logger.LogDebug("Alerting admin user");
+                            _telegramService.SendMessage(telegramUser.Id, JsonSerializer.Serialize(prediction));
+                        } 
+                        else if (prediction.Prediction == "cat" && prediction.Score[0] >= _configurationOptions.PredictionThreshold)
+                        {
+                            _logger.LogDebug("Alerting non-admin users");
+                            _telegramService.SendMessage(telegramUser.Id, "Mr Pussycat is waiting...");
+                        }
                     }
-                    else if (prediction.Prediction == "cat")
-                    {
-                        _telegramService.SendMessage(telegramUser.Id, "Mr Pussycat is waiting...");
-                    }
+                    _lastNotificationSent = DateTime.Now;
                 }
             }
             else
             {
-                File.Delete(imageLocation);
+                if ((DateTime.Now - _lastNoneImageSaved).TotalMinutes >= _configurationOptions.MinutesBetweenNoneImageSaved)
+                {
+                    _logger.LogDebug("Saving non-event image");
+                    _imageService.MoveImage(imageLocation, @"/media/" + prediction.Prediction + "/" + imageFilename);
+                    _lastNoneImageSaved = DateTime.Now;
+                } 
+                else
+                {
+                    _logger.LogDebug("Deleting non-event image");
+                    File.Delete(imageLocation);
+                }
             }
 
             return prediction.Prediction;
