@@ -10,6 +10,7 @@ namespace cat_detector.Services
         private IConfiguration _configuration;
         private TelegramService _telegramService;
         private ImageService _imageService;
+        private DateTime _lastNotificationSent;
 
         public PredictionService(ILogger<PredictionService> logger, IConfiguration configuration, TelegramService telegramService, ImageService imageService)
         {
@@ -37,13 +38,19 @@ namespace cat_detector.Services
 
                 foreach (TelegramUserClass telegramUser in _configuration.GetSection(ConfigurationOptions.Config).Get<ConfigurationOptions>().TelegramUsers)
                 {
-                    if (telegramUser.Admin)
+                    if ((DateTime.Now - _lastNotificationSent).TotalMinutes >= _configuration.GetSection(ConfigurationOptions.Config).Get<ConfigurationOptions>().MinutesBetweenAlerts)
                     {
-                        _telegramService.SendMessage(telegramUser.Id, JsonSerializer.Serialize(prediction));
-                    }
-                    else if (prediction.Prediction == "cat")
-                    {
-                        _telegramService.SendMessage(telegramUser.Id, "Mr Pussycat is waiting...");
+                        if (telegramUser.Admin)
+                        {
+                            _telegramService.SendMessage(telegramUser.Id, JsonSerializer.Serialize(prediction));
+                            _lastNotificationSent = DateTime.Now;
+
+                        }
+                        else if (prediction.Prediction == "cat")
+                        {
+                            _telegramService.SendMessage(telegramUser.Id, "Mr Pussycat is waiting...");
+                            _lastNotificationSent = DateTime.Now;
+                        }
                     }
                 }
             }
