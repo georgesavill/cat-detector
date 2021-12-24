@@ -12,6 +12,8 @@ namespace cat_detector.Services
         private ImageService _imageService;
         private DateTime _lastNotificationSent;
         private DateTime _lastNoneImageSaved;
+        private int _continuousPredictionCount = 0;
+        private Queue<string> _predictionHistory = new Queue<string>(5);
 
         public PredictionService(ILogger<PredictionService> logger, IConfiguration configuration, TelegramService telegramService, ImageService imageService)
         {
@@ -31,28 +33,32 @@ namespace cat_detector.Services
 
             MLModel.ModelInput imageData = new MLModel.ModelInput() { ImageSource = imageLocation };
             MLModel.ModelOutput prediction =  await Task.FromResult(MLModel.Predict(imageData));
+            _predictionHistory.Enqueue(prediction.Prediction);
 
             if (prediction.Prediction != "none")
             {
                 _logger.LogInformation("PREDICTION: {0}", JsonSerializer.Serialize(prediction));
                 _imageService.MoveImage(imageLocation, @"/media/" + prediction.Prediction + "/" + imageFilename);
 
-                if ((DateTime.Now - _lastNotificationSent).TotalMinutes >= _configurationOptions.MinutesBetweenAlerts)
+                if (ConsecutivePredictionThresholdReached(prediction.Prediction))
                 {
-                    foreach (TelegramUserClass telegramUser in _configurationOptions.TelegramUsers)
+                    if ((DateTime.Now - _lastNotificationSent).TotalMinutes >= _configurationOptions.MinutesBetweenAlerts)
                     {
-                        if (telegramUser.Admin)
+                        foreach (TelegramUserClass telegramUser in _configurationOptions.TelegramUsers)
                         {
-                            _logger.LogInformation("Alerting admin user");
-                            _telegramService.SendMessage(telegramUser.Id, JsonSerializer.Serialize(prediction));
-                        } 
-                        else if (prediction.Prediction == "cat" && prediction.Score[0] >= _configurationOptions.PredictionThreshold)
-                        {
-                            _logger.LogInformation("Alerting non-admin users");
-                            _telegramService.SendMessage(telegramUser.Id, "Mr Pussycat is waiting...");
+                            if (telegramUser.Admin)
+                            {
+                                _logger.LogInformation("Alerting admin user");
+                                _telegramService.SendMessage(telegramUser.Id, JsonSerializer.Serialize(prediction));
+                            }
+                            else if (prediction.Prediction == "cat" && prediction.Score[0] >= _configurationOptions.PredictionThreshold)
+                            {
+                                _logger.LogInformation("Alerting non-admin users");
+                                _telegramService.SendMessage(telegramUser.Id, "Mr Pussycat is waiting...");
+                            }
                         }
+                        _lastNotificationSent = DateTime.Now;
                     }
-                    _lastNotificationSent = DateTime.Now;
                 }
             }
             else
@@ -71,6 +77,24 @@ namespace cat_detector.Services
             }
 
             return prediction.Prediction;
+        }
+        private bool ConsecutivePredictionThresholdReached(string prediction)
+        {
+            _logger.LogDebug("ConsecutivePredictionThresholdReached() called");
+            bool predictionHistoryConsistent = true;
+            foreach(string historicalPrediction in _predictionHistory)
+            {
+                if (historicalPrediction != prediction)
+                {
+                    predictionHistoryConsistent = false;
+                }
+            }
+            while (_predictionHistory.Count > _configurationOptions.ConsecutivePredictionThreshold)
+            {
+                _predictionHistory.Dequeue();
+            }
+            _logger.LogDebug("Returning " + predictionHistoryConsistent);
+            return predictionHistoryConsistent;
         }
     }
 }
