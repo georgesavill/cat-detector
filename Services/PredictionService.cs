@@ -12,7 +12,6 @@ namespace cat_detector.Services
         private ImageService _imageService;
         private DateTime _lastNotificationSent;
         private DateTime _lastNoneImageSaved;
-        private int _continuousPredictionCount = 0;
         private Queue<string> _predictionHistory = new Queue<string>(5);
 
         public PredictionService(ILogger<PredictionService> logger, IConfiguration configuration, TelegramService telegramService, ImageService imageService)
