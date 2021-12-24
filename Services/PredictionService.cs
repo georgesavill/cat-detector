@@ -43,12 +43,13 @@ namespace cat_detector.Services
                     {
                         if (telegramUser.Admin)
                         {
+                            _logger.LogDebug("Alerting admin user");
                             _telegramService.SendMessage(telegramUser.Id, JsonSerializer.Serialize(prediction));
                             _lastNotificationSent = DateTime.Now;
-
                         }
                         else if (prediction.Prediction == "cat")
                         {
+                            _logger.LogDebug("Alerting non-admin user");
                             _telegramService.SendMessage(telegramUser.Id, "Mr Pussycat is waiting...");
                             _lastNotificationSent = DateTime.Now;
                         }
@@ -59,10 +60,12 @@ namespace cat_detector.Services
             {
                 if ((DateTime.Now - _lastNoneImageSaved).TotalMinutes >= _configuration.GetSection(ConfigurationOptions.Config).Get<ConfigurationOptions>().MinutesBetweenNoneImageSaved)
                 {
+                    _logger.LogDebug("Saving non-event image");
                     _imageService.MoveImage(imageLocation, @"/media/" + prediction.Prediction + "/" + imageFilename);
                 } 
                 else
                 {
+                    _logger.LogDebug("Deleting non-event image");
                     File.Delete(imageLocation);
                 }
             }
