@@ -39,13 +39,16 @@ namespace cat_detector.Services
             {
                 _logger.LogDebug(entry);
             }
+            _logger.LogDebug("Prediction count: {0} and threshold: {1}", _predictionHistory.Count, _configurationOptions.ConsecutivePredictionThreshold);
 
             while (_predictionHistory.Count > _configurationOptions.ConsecutivePredictionThreshold)
             {
                 _logger.LogDebug("Removing prediction from queue.");
-                _logger.LogDebug("Prediction count: {0} and threshold: {1}", _predictionHistory.Count, _configurationOptions.ConsecutivePredictionThreshold);
                 _predictionHistory.Dequeue();
             }
+
+            _logger.LogDebug("Prediction count: {0} and threshold: {1}", _predictionHistory.Count, _configurationOptions.ConsecutivePredictionThreshold);
+
             foreach (string entry in _predictionHistory)
             {
                 _logger.LogDebug(entry);
