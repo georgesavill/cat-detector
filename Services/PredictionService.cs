@@ -24,7 +24,7 @@ namespace cat_detector.Services
 
         public async Task<string> MakePrediction()
         {
-            //_logger.LogDebug("MakePrediction() called");
+            _logger.LogDebug("MakePrediction() called");
 
             (string imageLocation, string imageFilename) = await _imageService.DownloadCctvImage();
 
@@ -84,13 +84,13 @@ namespace cat_detector.Services
             {
                 if ((DateTime.Now - _lastNoneImageSaved).TotalMinutes >= _configurationOptions.MinutesBetweenNoneImageSaved)
                 {
-                    //_logger.LogDebug("Saving non-event image");
+                    _logger.LogDebug("Saving non-event image");
                     _imageService.MoveImage(imageLocation, @"/media/" + prediction.Prediction + "/" + imageFilename);
                     _lastNoneImageSaved = DateTime.Now;
                 } 
                 else
                 {
-                    //_logger.LogDebug("Deleting non-event image");
+                    _logger.LogDebug("Deleting non-event image");
                     File.Delete(imageLocation);
                 }
             }
