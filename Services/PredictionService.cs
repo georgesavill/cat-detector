@@ -34,7 +34,12 @@ namespace cat_detector.Services
             MLModel.ModelOutput prediction =  await Task.FromResult(MLModel.Predict(imageData));
 
             _predictionHistory.Enqueue(prediction.Prediction);
-            while (_predictionHistory.Count > _configurationOptions.ConsecutivePredictionThreshold) _predictionHistory.Dequeue();
+
+            while (_predictionHistory.Count > _configurationOptions.ConsecutivePredictionThreshold)
+            {
+                _logger.LogDebug("Removing prediction from queue.");
+                _predictionHistory.Dequeue();
+            }
 
             if (prediction.Prediction != "none")
             {
