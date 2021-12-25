@@ -56,6 +56,7 @@ namespace cat_detector.Services
                             {
                                 _logger.LogInformation("Alerting admin user");
                                 _telegramService.SendMessage(telegramUser.Id, JsonSerializer.Serialize(prediction));
+                                _telegramService.SendMessage(telegramUser.Id, JsonSerializer.Serialize(_predictionHistory));
                             }
                             if (prediction.Prediction == "cat" && prediction.Score[0] >= _configurationOptions.PredictionThreshold)
                             {
