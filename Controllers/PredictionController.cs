@@ -19,7 +19,7 @@ namespace cat_detector.Controllers
         [HttpGet]
         public async Task<string> Get()
         {
-            _logger.LogDebug("Get recieved");
+            //_logger.LogDebug("Get recieved");
             return await _predictionService.MakePrediction();
         }
     }
