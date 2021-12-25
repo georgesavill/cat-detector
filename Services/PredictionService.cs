@@ -57,9 +57,10 @@ namespace cat_detector.Services
                                 _logger.LogInformation("Alerting admin user");
                                 _telegramService.SendMessage(telegramUser.Id, JsonSerializer.Serialize(prediction));
                             }
-                            else if (prediction.Prediction == "cat" && prediction.Score[0] >= _configurationOptions.PredictionThreshold)
+                            if (prediction.Prediction == "cat" && prediction.Score[0] >= _configurationOptions.PredictionThreshold)
                             {
                                 _logger.LogInformation("Alerting non-admin users");
+                                _logger.LogDebug("Prediction score: {0} and threshold: {1}", prediction.Score[0], _configurationOptions.PredictionThreshold);
                                 _telegramService.SendMessage(telegramUser.Id, "Mr Pussycat is waiting...");
                             }
                         }
