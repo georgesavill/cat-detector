@@ -7,7 +7,8 @@
         public string CctvAuth { get; set; }
         public string CctvUrl { get; set; }
         public string TelegramUrl { get; set; }
-        public string WebhookUrl { get; set; }
+        public string WebhookUrlCat { get; set; }
+        public string WebhookUrlHuman { get; set; }
         public TelegramUserClass[] TelegramUsers { get; set; }
         public int ImageCropX { get; set; }
         public int ImageCropY { get; set; }
