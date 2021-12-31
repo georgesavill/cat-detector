@@ -31,5 +31,23 @@ namespace cat_detector.Services
                 _logger.LogError("ERROR: {0} : {1}", httpResponseContent, httpResponse.StatusCode);
             }
         }
+
+        public async void TriggerWebhook(string webhook)
+        {
+            _logger.LogDebug("TriggerWebhook() called with URL: {0}", webhook);
+            HttpClient client = new HttpClient();
+            HttpResponseMessage httpResponse = await client.PostAsync(webhook, null);
+
+            if (httpResponse.IsSuccessStatusCode)
+            {
+                string httpResponseContent = await httpResponse.Content.ReadAsStringAsync();
+                _logger.LogDebug(httpResponseContent);
+            }
+            else
+            {
+                string httpResponseContent = await httpResponse.Content.ReadAsStringAsync();
+                _logger.LogError("ERROR: {0} : {1}", httpResponseContent, httpResponse.StatusCode);
+            }
+        }
     }
 }

@@ -63,6 +63,7 @@ namespace cat_detector.Services
                                 _logger.LogInformation("Alerting non-admin users");
                                 _logger.LogDebug("Prediction score: {0} and threshold: {1}", prediction.Score[0], _configurationOptions.PredictionThreshold);
                                 _notificationService.SendTelegramMessage(telegramUser.Id, "Mr Pussycat is waiting...");
+                                _notificationService.TriggerWebhook(_configurationOptions.WebhookUrl);
                             }
                         }
                         _lastNotificationSent = DateTime.Now;
