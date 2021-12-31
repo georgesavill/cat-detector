@@ -61,12 +61,12 @@ namespace cat_detector.Services
 
                         if (prediction.Prediction == "cat")
                         {
-                            _logger.LogInformation("Triggering cat webhook");
+                            _logger.LogDebug("Triggering cat webhook");
                             _notificationService.TriggerWebhook(_configurationOptions.WebhookUrlCat);
                         } 
                         else if (prediction.Prediction == "human")
                         {
-                            _logger.LogInformation("Triggering human webhook");
+                            _logger.LogDebug("Triggering human webhook");
                             _notificationService.TriggerWebhook(_configurationOptions.WebhookUrlHuman);
                         }
                         _lastNotificationSent = DateTime.Now;
