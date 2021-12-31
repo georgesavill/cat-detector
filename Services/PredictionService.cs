@@ -52,15 +52,8 @@ namespace cat_detector.Services
                     {
                         foreach (TelegramUserClass telegramUser in _configurationOptions.TelegramUsers)
                         {
-                            if (telegramUser.Admin)
-                            {
-                                _logger.LogInformation("Alerting admin user");
-                                _notificationService.SendTelegramMessage(telegramUser.Id, JsonSerializer.Serialize(prediction));
-                                _notificationService.SendTelegramMessage(telegramUser.Id, JsonSerializer.Serialize(_predictionHistory));
-                            }
                             if (prediction.Prediction == "cat" && prediction.Score[0] >= _configurationOptions.PredictionThreshold)
                             {
-                                _logger.LogInformation("Alerting non-admin users");
                                 _logger.LogDebug("Prediction score: {0} and threshold: {1}", prediction.Score[0], _configurationOptions.PredictionThreshold);
                                 _notificationService.SendTelegramMessage(telegramUser.Id, "Mr Pussycat is waiting...");
                             }
