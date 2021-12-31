@@ -2,20 +2,20 @@
 
 namespace cat_detector.Services
 {
-    public class TelegramService
+    public class NotificationService
     {
-        private readonly ILogger<TelegramService> _logger;
+        private readonly ILogger<NotificationService> _logger;
         private ConfigurationOptions _configurationOptions;
 
-        public TelegramService(ILogger<TelegramService> logger, IConfiguration configuration)
+        public NotificationService(ILogger<NotificationService> logger, IConfiguration configuration)
         {
             _logger = logger;
             _configurationOptions = configuration.GetSection(ConfigurationOptions.Config).Get<ConfigurationOptions>();
         }
 
-        public async void SendMessage(string telegramId, string message)
+        public async void SendTelegramMessage(string telegramId, string message)
         {
-            _logger.LogDebug("SendMessage() called with ID: {0} and message: {1}", telegramId, message);
+            _logger.LogDebug("SendTelegramMessage() called with ID: {0} and message: {1}", telegramId, message);
 
             HttpClient client = new HttpClient();
             HttpResponseMessage httpResponse = await client.PostAsync(_configurationOptions.TelegramUrl + "?chat_id=" + telegramId + "&text=" + message, null);

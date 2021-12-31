@@ -8,17 +8,17 @@ namespace cat_detector.Services
     {
         private readonly ILogger<PredictionService> _logger;
         private ConfigurationOptions _configurationOptions;
-        private TelegramService _telegramService;
+        private NotificationService _notificationService;
         private ImageService _imageService;
         private DateTime _lastNotificationSent;
         private DateTime _lastNoneImageSaved;
         private Queue<string> _predictionHistory = new Queue<string>(5);
 
-        public PredictionService(ILogger<PredictionService> logger, IConfiguration configuration, TelegramService telegramService, ImageService imageService)
+        public PredictionService(ILogger<PredictionService> logger, IConfiguration configuration, NotificationService notificationService, ImageService imageService)
         {
             _logger = logger;
             _configurationOptions = configuration.GetSection(ConfigurationOptions.Config).Get<ConfigurationOptions>();
-            _telegramService = telegramService;
+            _notificationService = notificationService;
             _imageService = imageService;
         }
 
@@ -55,14 +55,14 @@ namespace cat_detector.Services
                             if (telegramUser.Admin)
                             {
                                 _logger.LogInformation("Alerting admin user");
-                                _telegramService.SendMessage(telegramUser.Id, JsonSerializer.Serialize(prediction));
-                                _telegramService.SendMessage(telegramUser.Id, JsonSerializer.Serialize(_predictionHistory));
+                                _notificationService.SendTelegramMessage(telegramUser.Id, JsonSerializer.Serialize(prediction));
+                                _notificationService.SendTelegramMessage(telegramUser.Id, JsonSerializer.Serialize(_predictionHistory));
                             }
                             if (prediction.Prediction == "cat" && prediction.Score[0] >= _configurationOptions.PredictionThreshold)
                             {
                                 _logger.LogInformation("Alerting non-admin users");
                                 _logger.LogDebug("Prediction score: {0} and threshold: {1}", prediction.Score[0], _configurationOptions.PredictionThreshold);
-                                _telegramService.SendMessage(telegramUser.Id, "Mr Pussycat is waiting...");
+                                _notificationService.SendTelegramMessage(telegramUser.Id, "Mr Pussycat is waiting...");
                             }
                         }
                         _lastNotificationSent = DateTime.Now;

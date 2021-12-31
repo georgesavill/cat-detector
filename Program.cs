@@ -32,7 +32,7 @@ void ConfigureConfiguration(ConfigurationManager configuration)
 void ConfigureServices(IServiceCollection services)
 {
     Console.WriteLine("Configuring services");
-    services.AddTransient<TelegramService>();
+    services.AddTransient<NotificationService>();
     services.AddTransient<ImageService>();
     services.AddSingleton<PredictionService>();
 }
