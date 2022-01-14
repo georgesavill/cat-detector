@@ -52,14 +52,14 @@ namespace cat_detector.Services
                     {
                         foreach (TelegramUserClass telegramUser in _configurationOptions.TelegramUsers)
                         {
-                            if (prediction.Prediction == "cat" && prediction.Score[0] >= _configurationOptions.PredictionThreshold)
-                            {
-                                _logger.LogDebug("Prediction score: {0} and threshold: {1}", prediction.Score[0], _configurationOptions.PredictionThreshold);
-                                _notificationService.SendTelegramMessage(telegramUser.Id, "Mr Pussycat is waiting...");
-                            }
-                            else if (prediction.Prediction == "human" && prediction.Score[1] >= _configurationOptions.PredictionThreshold && telegramUser.Admin)
+                            if (prediction.Prediction == "cat" && prediction.Score[1] >= _configurationOptions.PredictionThreshold)
                             {
                                 _logger.LogDebug("Prediction score: {0} and threshold: {1}", prediction.Score[1], _configurationOptions.PredictionThreshold);
+                                _notificationService.SendTelegramMessage(telegramUser.Id, "Mr Pussycat is waiting...");
+                            }
+                            else if (prediction.Prediction == "human" && prediction.Score[2] >= _configurationOptions.PredictionThreshold && telegramUser.Admin)
+                            {
+                                _logger.LogDebug("Prediction score: {0} and threshold: {1}", prediction.Score[2], _configurationOptions.PredictionThreshold);
                                 _notificationService.SendTelegramMessage(telegramUser.Id, "There is a person at the door");
                             }
                         }
