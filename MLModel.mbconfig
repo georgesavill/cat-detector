@@ -4,7 +4,7 @@
   "DataSource": {
     "Type": "Folder",
     "Version": 1,
-    "FolderPath": "C:\\cctv-image-cat-and-human"
+    "FolderPath": "C:\\Users\\george\\Documents\\cctv-image-cat-and-human"
   },
   "Environment": {
     "Type": "LocalGPU",
@@ -18,8 +18,8 @@
         "Version": 0,
         "Type": "Trial",
         "TrainerName": "ImageClassification",
-        "Score": 0.9867,
-        "RuntimeInSeconds": 1635.5
+        "Score": 0.9859,
+        "RuntimeInSeconds": 2154.6
       }
     ],
     "Pipeline": "[{\"EstimatorType\":\"MapValueToKey\",\"Inputs\":[\"Label\"],\"Outputs\":[\"Label\"]},{\"OutputColumnName\":\"ImageSource_featurized\",\"ImageFolder\":\"\",\"InputColumnName\":\"ImageSource\",\"EstimatorType\":\"LoadRawImageBytes\",\"Inputs\":[\"ImageSource\"],\"Outputs\":[\"ImageSource_featurized\"]},{\"EstimatorType\":\"CopyColumns\",\"Inputs\":[\"ImageSource_featurized\"],\"Outputs\":[\"Features\"]},{\"LabelColumnName\":\"Label\",\"EstimatorType\":\"ImageClassificationMulti\",\"Inputs\":[\"Features\"],\"Outputs\":[\"Score\"]},{\"EstimatorType\":\"MapKeyToValue\",\"Inputs\":[\"PredictedLabel\"],\"Outputs\":[\"PredictedLabel\"]}]",
