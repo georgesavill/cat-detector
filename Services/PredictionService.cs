@@ -44,7 +44,15 @@ namespace cat_detector.Services
             if (prediction.Prediction != "none")
             {
                 _logger.LogInformation("PREDICTION: {0}", JsonSerializer.Serialize(prediction));
-                _imageService.MoveImage(imageLocation, @"/media/" + prediction.Prediction + "/" + imageFilename);
+
+                if (prediction.Score[3] < (1 - _configurationOptions.PredictionThreshold))
+                {
+                    _imageService.MoveImage(imageLocation, @"/media/" + prediction.Prediction + "/" + imageFilename);
+                }
+                else
+                {
+                    File.Delete(imageLocation);
+                }
 
                 if (ConsecutivePredictionThresholdReached(prediction.Prediction))
                 {
