@@ -45,7 +45,7 @@ namespace cat_detector.Services
             {
                 _logger.LogInformation("PREDICTION: {0}", JsonSerializer.Serialize(prediction));
 
-                if (prediction.Score[3] < (1 - _configurationOptions.PredictionThreshold) && prediction.Prediction == "human")
+                if (prediction.Score[3] < (1 - _configurationOptions.PredictionThreshold))
                 {
                     _imageService.MoveImage(imageLocation, @"/media/" + prediction.Prediction + "/" + imageFilename);
                 }
@@ -87,8 +87,17 @@ namespace cat_detector.Services
             }
             else
             {
-                _logger.LogDebug("Deleting non-event image");
-                File.Delete(imageLocation);
+                if ((DateTime.Now - _lastNoneImageSaved).TotalMinutes >= _configurationOptions.MinutesBetweenNoneImageSaved)
+                {
+                    _logger.LogDebug("Saving non-event image");
+                    _imageService.MoveImage(imageLocation, @"/media/" + prediction.Prediction + "/" + imageFilename);
+                    _lastNoneImageSaved = DateTime.Now;
+                } 
+                else
+                {
+                    _logger.LogDebug("Deleting non-event image");
+                    File.Delete(imageLocation);
+                }
             }
 
             return prediction.Prediction;
